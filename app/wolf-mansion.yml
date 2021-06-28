@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wolf-mansion
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wolf-mansion
+  template:
+    metadata:
+      labels:
+        app: wolf-mansion
+    spec:
+      imagePullSecrets:
+          - name: regcred
+      containers:
+        - name: wolf-mansion
+          env:
+            - name: TZ
+              value: Asia/Tokyo
+          image: ghcr.io/h-orito/wolf-mansion:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "500m"
+            limits:
+              memory: "1024Mi"
+              cpu: "1000m"
+          volumeMounts:
+            - name: wolf-log-storage
+              mountPath: /app/logs
+          envFrom:
+          - secretRef:
+              name: wolf-mansion-secret
+            prefix: WOLF_MANSION_
+          - secretRef:
+              name: mysql-secret
+            prefix: MYSQL_
+          - secretRef:
+              name: twitter-secret
+            prefix: TWITTER_
+      volumes:
+        - name: wolf-log-storage
+          hostPath:
+            path: /var/log/wolf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wolf-mansion
+spec:
+  ports:
+    - port: 8081
+      protocol: TCP
+      targetPort: 8081
+  selector:
+    app: wolf-mansion
+  type: NodePort

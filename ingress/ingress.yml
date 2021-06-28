@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wolf-ingress
+spec:
+  rules:
+  # - host: wolfort.sample.com
+  - http:
+      paths:
+      - path: /wolf-portal
+        pathType: Prefix
+        backend:
+          service:
+            name: wolf-portal
+            port:
+              number: 8080
+      - path: /wolf-mansion
+        pathType: Prefix
+        backend:
+          service:
+            name: wolf-mansion
+            port:
+              number: 8081
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingress-nginx-controller
+  namespace: ingress-nginx
+data:
+  access-log-path: /var/log/nginx/access.log
+  error-log-path: /var/log/nginx/error.log
+  # 荒らしは403
+  block-cidrs: 111.239.190.84,126.236.242.243,39.110.200.171,223.29.113.182
+  enable-real-ip: "true"

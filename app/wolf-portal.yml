@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wolf-portal
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wolf-portal
+  template:
+    metadata:
+      labels:
+        app: wolf-portal
+    spec:
+      imagePullSecrets:
+          - name: regcred
+      containers:
+        - name: wolf-portal
+          env:
+            - name: TZ
+              value: Asia/Tokyo
+          image: ghcr.io/h-orito/wolf-portal:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "500m"
+            limits:
+              memory: "1024Mi"
+              cpu: "1000m"
+          volumeMounts:
+            - name: wolf-log-storage
+              mountPath: /app/logs
+          envFrom:
+          - secretRef:
+              name: wolf-portal-secret
+            prefix: WOLF_PORTAL_
+          - secretRef:
+              name: mysql-secret
+            prefix: MYSQL_
+      volumes:
+        - name: wolf-log-storage
+          hostPath:
+            path: /var/log/wolf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wolf-portal
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: wolf-portal
+  type: NodePort

@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wolf-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wolf-db
+  template:
+    metadata:
+      labels:
+        app: wolf-db
+    spec:
+      imagePullSecrets:
+        - name: regcred
+      containers:
+        - image: mysql/mysql-server:8.0
+          name: wolf-db
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: root_password
+            - name: TZ
+              value: Asia/Tokyo
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: wolf-mysql
+              mountPath: /var/lib/mysql
+            - name: my-cnf
+              mountPath: /etc/my.cnf
+              subPath: my.cnf
+              readOnly: true
+      nodeSelector:
+        nodeName: worker
+      volumes:
+        - name: wolf-mysql
+          persistentVolumeClaim:
+            claimName: wolf-db-pvc
+        - name: my-cnf
+          configMap:
+            name: wolf-db-configmap
+            items:
+              - key: my.cnf
+                path: my.cnf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wolf-db
+spec:
+  selector:
+    app: wolf-db
+  type: LoadBalancer
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wolf-db-configmap
+  labels:
+    app: wolf-db
+data:
+  my.cnf: |-
+    [mysqld]
+    bind-address=0.0.0.0
+    character-set-server=utf8mb4
+    collation_server=utf8mb4_unicode_ci
+    lower_case_table_names = 1
+    transaction-isolation=READ-COMMITTED
+    sql_mode = 'TRADITIONAL'
+    skip-name-resolve=1
+    default_authentication_plugin=mysql_native_password
+
+    [client]
+    default-character-set=utf8mb4
