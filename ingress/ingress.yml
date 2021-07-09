@@ -21,6 +21,27 @@ spec:
             name: wolf-mansion
             port:
               number: 8081
+      - path: /howling-wolf
+        pathType: Prefix
+        backend:
+          service:
+            name: howling-wolf
+            port:
+              number: 8086
+      - path: /firewolf
+        pathType: Prefix
+        backend:
+          service:
+            name: firewolf
+            port:
+              number: 8087
+      - path: /lastwolf
+        pathType: Prefix
+        backend:
+          service:
+            name: lastwolf
+            port:
+              number: 8088
 ---
 apiVersion: v1
 kind: ConfigMap

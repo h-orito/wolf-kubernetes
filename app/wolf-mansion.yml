@@ -26,10 +26,8 @@ spec:
           resources:
             requests:
               memory: "256Mi"
-              cpu: "500m"
             limits:
               memory: "1024Mi"
-              cpu: "1000m"
           volumeMounts:
             - name: wolf-log-storage
               mountPath: /app/logs
@@ -43,6 +41,8 @@ spec:
           - secretRef:
               name: twitter-secret
             prefix: TWITTER_
+      nodeSelector:
+        nodeName: worker
       volumes:
         - name: wolf-log-storage
           hostPath:

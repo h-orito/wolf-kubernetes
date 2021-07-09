@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wolf-portal
+  name: firewolf
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: wolf-portal
+      app: firewolf
   template:
     metadata:
       labels:
-        app: wolf-portal
+        app: firewolf
     spec:
       imagePullSecrets:
           - name: regcred
       containers:
-        - name: wolf-portal
+        - name: firewolf
           env:
             - name: TZ
               value: Asia/Tokyo
-          image: ghcr.io/h-orito/wolf-portal:latest
+          image: ghcr.io/h-orito/firewolf:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 8080
+            - containerPort: 8087
           resources:
             requests:
               memory: "256Mi"
@@ -31,29 +31,40 @@ spec:
           volumeMounts:
             - name: wolf-log-storage
               mountPath: /app/logs
+            - name: firebase-adminsdk-storage
+              mountPath: /app/firebase
           envFrom:
           - secretRef:
-              name: wolf-portal-secret
-            prefix: WOLF_PORTAL_
+              name: firewolf-secret
+            prefix: FIREWOLF_
           - secretRef:
               name: mysql-secret
             prefix: MYSQL_
+          - secretRef:
+              name: twitter-secret
+            prefix: TWITTER_
+          - secretRef:
+              name: slack-secret
+            prefix: SLACK_
       nodeSelector:
         nodeName: worker
       volumes:
         - name: wolf-log-storage
           hostPath:
             path: /var/log/wolf
+        - name: firebase-adminsdk-storage
+          hostPath:
+            path: /app/firebase
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: wolf-portal
+  name: firewolf
 spec:
   ports:
-    - port: 8080
+    - port: 8087
       protocol: TCP
-      targetPort: 8080
+      targetPort: 8087
   selector:
-    app: wolf-portal
+    app: firewolf
   type: NodePort

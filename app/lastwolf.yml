@@ -1,28 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: wolf-portal
+  name: lastwolf
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: wolf-portal
+      app: lastwolf
   template:
     metadata:
       labels:
-        app: wolf-portal
+        app: lastwolf
     spec:
       imagePullSecrets:
           - name: regcred
       containers:
-        - name: wolf-portal
+        - name: lastwolf
           env:
             - name: TZ
               value: Asia/Tokyo
-          image: ghcr.io/h-orito/wolf-portal:latest
+          image: ghcr.io/h-orito/lastwolf:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 8080
+            - containerPort: 8088
           resources:
             requests:
               memory: "256Mi"
@@ -31,29 +31,40 @@ spec:
           volumeMounts:
             - name: wolf-log-storage
               mountPath: /app/logs
+            - name: firebase-adminsdk-storage
+              mountPath: /app/firebase
           envFrom:
           - secretRef:
-              name: wolf-portal-secret
-            prefix: WOLF_PORTAL_
+              name: lastwolf-secret
+            prefix: LASTWOLF_
           - secretRef:
               name: mysql-secret
             prefix: MYSQL_
+          - secretRef:
+              name: twitter-secret
+            prefix: TWITTER_
+          - secretRef:
+              name: slack-secret
+            prefix: SLACK_
       nodeSelector:
         nodeName: worker
       volumes:
         - name: wolf-log-storage
           hostPath:
             path: /var/log/wolf
+        - name: firebase-adminsdk-storage
+          hostPath:
+            path: /app/firebase
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: wolf-portal
+  name: lastwolf
 spec:
   ports:
-    - port: 8080
+    - port: 8088
       protocol: TCP
-      targetPort: 8080
+      targetPort: 8088
   selector:
-    app: wolf-portal
+    app: lastwolf
   type: NodePort
