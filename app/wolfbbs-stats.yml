@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wolfbbs-stats
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wolfbbs-stats
+  template:
+    metadata:
+      labels:
+        app: wolfbbs-stats
+    spec:
+      imagePullSecrets:
+          - name: regcred
+      containers:
+        - name: wolfbbs-stats
+          env:
+            - name: TZ
+              value: Asia/Tokyo
+          image: ghcr.io/h-orito/wolfbbs-stats:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8082
+          resources:
+            requests:
+              memory: "256Mi"
+            limits:
+              memory: "1024Mi"
+          volumeMounts:
+            - name: wolf-log-storage
+              mountPath: /app/logs
+          envFrom:
+          - secretRef:
+              name: wolfbbs-stats-secret
+            prefix: WOLFBBS_STATS_
+          - secretRef:
+              name: mysql-secret
+            prefix: MYSQL_
+      nodeSelector:
+        nodeName: worker
+      volumes:
+        - name: wolf-log-storage
+          hostPath:
+            path: /var/log/wolf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wolfbbs-stats
+spec:
+  ports:
+    - port: 8082
+      protocol: TCP
+      targetPort: 8082
+  selector:
+    app: wolfbbs-stats
+  type: NodePort

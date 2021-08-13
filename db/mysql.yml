@@ -60,6 +60,7 @@ spec:
   - protocol: TCP
     port: 3306
     targetPort: 3306
+    nodePort: 30000 # wolf-portalを外から繋ぐ用
 ---
 apiVersion: v1
 kind: ConfigMap

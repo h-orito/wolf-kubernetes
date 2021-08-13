@@ -21,6 +21,13 @@ spec:
             name: wolf-mansion
             port:
               number: 8081
+      - path: /wolfbbs-stats
+        pathType: Prefix
+        backend:
+          service:
+            name: wolfbbs-stats
+            port:
+              number: 8082
       - path: /howling-wolf
         pathType: Prefix
         backend:
