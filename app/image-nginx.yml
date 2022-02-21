@@ -1,0 +1,99 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: image-nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: image-nginx
+  template:
+    metadata:
+      labels:
+        app: image-nginx
+    spec:
+      containers:
+        - name: image-nginx
+          env:
+            - name: TZ
+              value: Asia/Tokyo
+          image: arm64v8/nginx:1.21.6
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "128Mi"
+            limits:
+              memory: "256Mi"
+          volumeMounts:
+            - name: image-nginx-conf
+              readOnly: true
+              mountPath: /etc/nginx
+            - name: image-storage
+              mountPath: /var/www/html
+      nodeSelector:
+        nodeName: worker
+      volumes:
+        - name: image-nginx-conf
+          configMap:
+            name: image-nginx-conf
+            items:
+              - key: nginx.conf
+                path: nginx.conf
+        - name: image-storage
+          hostPath:
+            path: /mnt/vol1/www/html/
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: image-nginx
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: image-nginx
+  type: NodePort
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: image-nginx-conf
+data:
+  nginx.conf: |
+    user nginx;
+    worker_processes  3;
+    error_log  /var/log/nginx/error.log;
+    events {
+      worker_connections  10240;
+    }
+    http {
+      log_format  main
+              'remote_addr:$remote_addr\t'
+              'time_local:$time_local\t'
+              'method:$request_method\t'
+              'uri:$request_uri\t'
+              'host:$host\t'
+              'status:$status\t'
+              'bytes_sent:$body_bytes_sent\t'
+              'referer:$http_referer\t'
+              'useragent:$http_user_agent\t'
+              'forwardedfor:$http_x_forwarded_for\t'
+              'request_time:$request_time';
+
+      access_log    /var/log/nginx/access.log main;
+
+      server {
+          listen       80;
+          server_name  _;
+
+          location / {
+              root   /var/www/html;
+              index  index.html index.htm;
+          }
+      }
+      # include /etc/nginx/virtualhost/virtualhost.conf;
+    }

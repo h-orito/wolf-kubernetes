@@ -2,53 +2,80 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: wolf-ingress
+  annotations:
+    # 正規表現を使う
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    # 「/」直後から、正規表現のキャプチャしたグループでパスを指定する
+    nginx.ingress.kubernetes.io/rewrite-target: /$1$2
 spec:
+  ingressClassName: nginx
   rules:
   # - host: wolfort.sample.com
   - http:
       paths:
-      - path: /wolf-portal
-        pathType: Prefix
-        backend:
-          service:
-            name: wolf-portal
-            port:
-              number: 8080
-      - path: /wolf-mansion
+      - path: /(wolf-mansion)(\/.*)
         pathType: Prefix
         backend:
           service:
             name: wolf-mansion
             port:
               number: 8081
-      - path: /wolfbbs-stats
+      - path: /(image-uploader)(\/.*)
         pathType: Prefix
         backend:
           service:
-            name: wolfbbs-stats
+            name: image-uploader
             port:
-              number: 8082
-      - path: /howling-wolf
+              number: 8080
+      - path: /(image)(\/.*)
         pathType: Prefix
         backend:
           service:
-            name: howling-wolf
+            name: image-nginx
             port:
-              number: 8086
-      - path: /firewolf
-        pathType: Prefix
-        backend:
-          service:
-            name: firewolf
-            port:
-              number: 8087
-      - path: /lastwolf
-        pathType: Prefix
-        backend:
-          service:
-            name: lastwolf
-            port:
-              number: 8088
+              number: 80
+      # - path: /dice-role/(.*)
+      #   pathType: Prefix
+      #   backend:
+      #     service:
+      #       name: dice-role
+      #       port:
+      #         number: 3000
+# - path: /wolf-portal
+#   pathType: Prefix
+#   backend:
+#     service:
+#       name: wolf-portal
+#       port:
+#         number: 8080
+# - path: /wolfbbs-stats
+#   pathType: Prefix
+#   backend:
+#     service:
+#       name: wolfbbs-stats
+#       port:
+#         number: 8082
+# - path: /howling-wolf
+#   pathType: Prefix
+#   backend:
+#     service:
+#       name: howling-wolf
+#       port:
+#         number: 8086
+# - path: /firewolf
+#   pathType: Prefix
+#   backend:
+#     service:
+#       name: firewolf
+#       port:
+#         number: 8087
+# - path: /lastwolf
+#   pathType: Prefix
+#   backend:
+#     service:
+#       name: lastwolf
+#       port:
+#         number: 8088
 ---
 apiVersion: v1
 kind: ConfigMap

@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dice-role
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dice-role
+  template:
+    metadata:
+      labels:
+        app: dice-role
+    spec:
+      imagePullSecrets:
+          - name: regcred
+      containers:
+        - name: dice-role
+          env:
+            - name: TZ
+              value: Asia/Tokyo
+          image: ghcr.io/h-orito/dice-role:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              memory: "256Mi"
+            limits:
+              memory: "1024Mi"
+      nodeSelector:
+        nodeName: worker
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dice-role
+spec:
+  ports:
+    - port: 3000
+      protocol: TCP
+      targetPort: 3000
+  selector:
+    app: dice-role
+  type: NodePort
