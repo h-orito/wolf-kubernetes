@@ -28,8 +28,21 @@ spec:
               memory: "256Mi"
             limits:
               memory: "1024Mi"
+          volumeMounts:
+            - name: secretdir
+              mountPath: "/etc/secret"
+          env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /etc/secret/firebase-admin-sdk.json
       nodeSelector:
         nodeName: worker
+      volumes:
+      - name: secretdir
+        secret:
+          secretName: dice-role-firebase-adminsdk-secret
+          items:
+          - key: secretfile
+            path: firebase-admin-sdk.json
 ---
 apiVersion: v1
 kind: Service
