@@ -17,13 +17,13 @@ spec:
   - host: wolfort.dev
     http:
       paths:
-      - path: /(wolf-mansion)(\/.*)
-        pathType: Prefix
-        backend:
-          service:
-            name: wolf-mansion
-            port:
-              number: 8081
+      # - path: /(wolf-mansion)(\/.*)
+      #   pathType: Prefix
+      #   backend:
+      #     service:
+      #       name: wolf-mansion
+      #       port:
+      #         number: 8081
       - path: /(lastwolf)(\/.*)
         pathType: Prefix
         backend:
@@ -31,6 +31,20 @@ spec:
             name: lastwolf
             port:
               number: 8088
+      - path: /(howling-wolf)(\/.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: howling-wolf
+            port:
+              number: 8086
+      - path: /(firewolf)(\/.*)
+        pathType: Prefix
+        backend:
+          service:
+            name: firewolf
+            port:
+              number: 8087
       - path: /(image-uploader)(\/.*)
         pathType: Prefix
         backend:
@@ -73,20 +87,7 @@ spec:
 #       name: wolfbbs-stats
 #       port:
 #         number: 8082
-# - path: /howling-wolf
-#   pathType: Prefix
-#   backend:
-#     service:
-#       name: howling-wolf
-#       port:
-#         number: 8086
-# - path: /firewolf
-#   pathType: Prefix
-#   backend:
-#     service:
-#       name: firewolf
-#       port:
-#         number: 8087
+
 ---
 apiVersion: v1
 kind: ConfigMap
